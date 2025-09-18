@@ -2,6 +2,8 @@
 /staticfiles
 # static/**
 
+read.md
+
 **/migrations
 # **/templates
 
