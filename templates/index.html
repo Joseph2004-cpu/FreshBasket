@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FreshBasket - Online Grocery Store Ghana</title>
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* (styles kept from previous cleaned version) */
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height:1.6; color:#333; background:#f8f9fa; }
+    .container { max-width:1200px; margin:0 auto; padding:0 20px; }
+
+    .navbar { background:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.1); position:sticky; top:0; z-index:1000; }
+    .nav-container { max-width:1200px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:15px 20px; gap:12px; }
+    .logo { display:flex; align-items:center; font-size:22px; font-weight:700; color:#2c5530; }
+    .logo i { margin-right:10px; color:#4CAF50; }
+
+    .search-container { flex:1; max-width:560px; position:relative; margin:0 20px; }
+    .search-input { width:100%; padding:12px 50px 12px 15px; border:2px solid #e0e0e0; border-radius:25px; font-size:16px; }
+    .search-input:focus { border-color:#4CAF50; outline:none; }
+    .search-btn { position:absolute; right:5px; top:50%; transform:translateY(-50%); background:#4CAF50; border:none; padding:8px 12px; border-radius:50%; color:#fff; cursor:pointer; }
+
+    .nav-links { display:flex; align-items:center; gap:12px; }
+    .cart-container { position:relative; }
+    .cart-btn { display:flex; align-items:center; gap:8px; background:none; border:none; cursor:pointer; padding:8px 10px; border-radius:8px; font-size:16px; }
+    .cart-count { background:#ff6b35; color:#fff; border-radius:50%; padding:2px 7px; font-size:12px; min-width:18px; text-align:center; display:inline-block; }
+
+    .category-bar { background:#fff; border-bottom:1px solid #e0e0e0; padding:12px 0; }
+    .category-container { display:flex; gap:10px; padding: 0 20px; overflow-x:auto; }
+    .category-btn { background:#f8f9fa; border:1px solid #e0e0e0; padding:8px 16px; border-radius:25px; cursor:pointer; font-weight:500; white-space:nowrap; }
+    .category-btn.active { background:#4CAF50; color:#fff; border-color:#4CAF50; }
+
+    .hero { background:linear-gradient(135deg,#4CAF50,#2c5530); color:#fff; padding:60px 0; text-align:center; }
+    .hero-content h1 { font-size:40px; margin-bottom:10px; }
+    .hero-content p { font-size:18px; opacity:0.95; }
+
+    .products-section { padding:40px 0; }
+    .section-title { text-align:center; font-size:32px; margin-bottom:30px; color:#2c5530; font-weight:700; }
+    .products-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:22px; }
+    .product-card { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.08); transition:transform .2s; display:flex; flex-direction:column; }
+    .product-card:hover { transform:translateY(-6px); }
+    .product-image { width:100%; height:180px; object-fit:cover; background:#fafafa; display:block; }
+    .product-info { padding:14px; display:flex; flex-direction:column; gap:8px; flex:1; }
+    .product-name{ font-size:16px; font-weight:700; color:#2c5530; }
+    .product-price{ font-weight:700; color:#4CAF50; }
+    .add-to-cart-btn{ margin-top:auto; background:#4CAF50; color:#fff; border:none; padding:10px; border-radius:8px; cursor:pointer; font-weight:700; }
+
+    .no-results { display:none; text-align:center; padding:40px 10px; color:#666; }
+
+    .cart-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:2000; justify-content:center; align-items:center; padding:20px; }
+    .cart-modal[aria-hidden="false"] { display:flex; }
+    .cart-modal-content { background:#fff; border-radius:12px; width:100%; max-width:760px; max-height:86vh; overflow:hidden; display:flex; flex-direction:column; }
+    .cart-header { display:flex; justify-content:space-between; align-items:center; padding:18px; border-bottom:1px solid #eee; }
+    .cart-body { padding:12px 18px; overflow:auto; flex:1; }
+    .cart-footer { padding:12px 18px; border-top:1px solid #eee; display:flex; justify-content:space-between; gap:12px; align-items:center; }
+
+    .cart-item { display:flex; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid #f5f5f5; }
+    .cart-item img { width:64px; height:64px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+    .cart-item-details { flex:1; min-width:0; }
+    .cart-item-controls { display:flex; gap:8px; align-items:center; }
+
+    .quantity-btn { width:32px; height:32px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .remove-item { background:#ff6b35; color:#fff; border:none; padding:6px 8px; border-radius:6px; cursor:pointer; }
+
+    .footer { background:#2c5530; color:#fff; padding:40px 0; margin-top:30px; }
+    .footer a { color:#ccc; text-decoration:none; }
+    .footer a:hover { color:#4CAF50; }
+
+    @media (max-width: 880px) {
+      .nav-container { flex-direction:column; gap:10px; align-items:stretch; }
+      .search-container { order:3; margin:0; }
+      .products-grid { grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Header -->
+  <header class="navbar" role="banner">
+    <div class="nav-container container">
+      <div class="logo" aria-label="FreshBasket logo"><i class="fas fa-shopping-basket"></i><span>FreshBasket</span></div>
+
+      <div class="search-container" role="search">
+        <input type="text" id="searchInput" placeholder="Search for products..." class="search-input" aria-label="Search products">
+        <button class="search-btn" id="searchBtn" aria-label="Search"><i class="fas fa-search"></i></button>
+      </div>
+
+      <nav class="nav-links" role="navigation" aria-label="Main navigation">
+        <div class="cart-container">
+          <button class="cart-btn" onclick="viewCart()" aria-haspopup="dialog" aria-controls="cartModal">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count" id="cartCount" aria-live="polite">0</span>
+            <span class="cart-text">Cart</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Category Filter Bar -->
+  <section class="category-bar" aria-label="Product categories">
+    <div class="category-container container">
+      <button class="category-btn active" data-category="all">All Products</button>
+      <button class="category-btn" data-category="fruits">Fruits</button>
+      <button class="category-btn" data-category="vegetables">Vegetables</button>
+      <button class="category-btn" data-category="grains">Grains</button>
+      <button class="category-btn" data-category="proteins">Proteins</button>
+      <button class="category-btn" data-category="dairy">Dairy</button>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="main-content" role="main">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-content container">
+        <h1>Fresh Groceries Delivered to Your Door</h1>
+        <p>Shop the best quality groceries at Ghana's most competitive prices</p>
+      </div>
+    </section>
+
+    <!-- Products -->
+    <section class="products-section">
+      <div class="container">
+        <h2 class="section-title">Our Products</h2>
+        <div class="products-grid" id="productsGrid" aria-live="polite">
+          <!-- products injected by JS -->
+        </div>
+
+        <div class="no-results" id="noResults" role="status" aria-hidden="true">
+          <i class="fas fa-search"></i>
+          <h3>No products found</h3>
+          <p>Try adjusting your search or browse our categories</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Shopping Cart Modal -->
+  <div class="cart-modal" id="cartModal" role="dialog" aria-hidden="true" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="cart-modal-content" role="document">
+      <div class="cart-header">
+        <h3 id="cartTitle">Shopping Cart</h3>
+        <button class="close-cart" onclick="closeCart()" aria-label="Close cart"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="cart-body" id="cartBody">
+        <!-- items injected by JS -->
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total"><strong>Total: GHS <span id="cartTotal">0.00</span></strong></div>
+        <div class="cart-actions" style="display:flex; gap:8px; width:50%;">
+          <button class="btn btn-secondary" onclick="closeCart()">Continue Shopping</button>
+          <button class="btn btn-primary" onclick="proceedToCheckout()">Checkout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; padding:20px 0;">
+        <div>
+          <h4 style="color:#4CAF50; margin-bottom:8px;">FreshBasket</h4>
+          <p>Your trusted online grocery store in Ghana</p>
+        </div>
+        <div>
+          <h4 style="color:#4CAF50; margin-bottom:8px;">Quick Links</h4>
+          <ul style="list-style:none; padding:0;">
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="color:#4CAF50; margin-bottom:8px;">Categories</h4>
+          <ul style="list-style:none; padding:0;">
+            <li><a href="#fruits">Fruits</a></li>
+            <li><a href="#vegetables">Vegetables</a></li>
+            <li><a href="#grains">Grains & Cereals</a></li>
+            <li><a href="#proteins">Proteins</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align:center; padding:12px 0; border-top:1px solid rgba(255,255,255,0.06); margin-top:12px;">
+        <p style="color:#ccc;">&copy; 2025 FreshBasket. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ---------- Updated product list (images matched to product names) ----------
+  const products = [
+  { id: 1,  name: "Premium Rice (5kg)",           category: "grains",     price: 45.00, image: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Rice_Grains.jpg",                          description: "High quality long grain rice" },
+  { id: 2,  name: "Maize Flour (5kg)",            category: "grains",     price: 30.00, image: "https://upload.wikimedia.org/wikipedia/commons/2/28/Maize_flour.jpg",                         description: "Finely milled maize flour for banku and kenkey" },
+  { id: 3,  name: "Ripe Plantain",                category: "fruits",     price: 8.00,  image: "https://upload.wikimedia.org/wikipedia/commons/6/61/RipePlantain.jpg",                        description: "Sweet ripe plantains ready for cooking" },
+  { id: 4,  name: "Black Beans (1kg)",            category: "grains",     price: 18.00, image: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Black_beans.jpg",                         description: "Premium black beans" },
+  { id: 5,  name: "Palm Oil (1 L)",               category: "grains",     price: 25.00, image: "https://upload.wikimedia.org/wikipedia/commons/8/83/Palm_Oil_in_bottle.jpg",                 description: "Pure red palm oil" },
+  { id: 6,  name: "Fresh Tomatoes (2kg)",         category: "vegetables", price: 15.00, image: "https://upload.wikimedia.org/wikipedia/commons/f/f5/Tomatoes.jpg",                              description: "Fresh red tomatoes" },
+  { id: 7,  name: "Red Onions (1kg)",             category: "vegetables", price: 10.00, image: "https://upload.wikimedia.org/wikipedia/commons/8/85/Red_onions.jpg",                            description: "Local red onions" },
+  { id: 8,  name: "Green Vegetables Mix",         category: "vegetables", price: 6.00,  image: "https://upload.wikimedia.org/wikipedia/commons/f/fe/Spinach_leaves.jpg",                        description: "Mixed green vegetables" },
+  { id: 9,  name: "Bell Peppers (500g)",          category: "vegetables", price: 12.00, image: "https://upload.wikimedia.org/wikipedia/commons/a/a4/Bell_peppers.JPG",                           description: "Colorful bell peppers" },
+  { id: 10, name: "Carrots (1kg)",                category: "vegetables", price: 9.00,  image: "https://upload.wikimedia.org/wikipedia/commons/e/e6/Carrots.JPG",                               description: "Fresh organic carrots" },
+  { id:15, name: "Smoked Fish (500g)",             category: "proteins", price: 28.00, image: "smoked-fish.jpg", description: "Traditional smoked fish for soups and stews" },
+  { id: 12, name: "Fresh Tilapia (1kg)",          category: "proteins",   price: 35.00, image: "fresh fish.jpg",                            description: "Fresh tilapia fish" },
+// REPLACE product entries with IDs 13..28 with these Pixabay images
+{ id:13, name: "Whole Chicken (1.5kg)",        category: "proteins", price: 42.00, image: "whole chicken.jpg", description: "Fresh whole chicken, farm-raised" },
+{ id:14, name: "Beef Cuts (1kg)",              category: "proteins", price: 55.00, image: "Beef cuts.jpg", description: "Premium beef cuts for stewing and grilling" },
+                                              
+{ id:16, name: "Fresh Eggs (30 per crate)",              category: "proteins", price: 20.00, image: "egg-7345934_1280.jpg", description: "Fresh farm eggs" },
+{ id:17, name: "Goat Meat (1kg)",              category: "proteins", price: 65.00, image: "goats-flesh-1858201_1280.jpg", description: "Fresh goat meat, perfect for pepper soup" },
+
+{ id:18, name: "Fresh Milk (1 L)",             category: "dairy",    price: 12.00, image: "https://cdn.pixabay.com/photo/2014/09/27/09/54/milk-463888_1280.jpg", description: "Fresh cow milk" },
+{ id:19, name: "Bread Loaf",                   category: "dairy",    price: 4.50,  image: "https://cdn.pixabay.com/photo/2014/12/15/13/40/bread-569069_1280.jpg", description: "Fresh baked bread loaf" },
+{ id:20, name: "Butter (250g)",                category: "dairy",    price: 15.00, image: "https://cdn.pixabay.com/photo/2017/08/06/00/27/butter-2580847_1280.jpg", description: "Creamy butter for cooking and baking" },
+{ id:21, name: "Cheese (200g)",                category: "dairy",    price: 22.00, image: "https://cdn.pixabay.com/photo/2014/12/21/23/28/cheese-576285_1280.jpg", description: "Premium cheese for sandwiches and cooking" },
+{ id:22, name: "Yogurt (500ml)",               category: "dairy",    price: 8.00,  image: "https://cdn.pixabay.com/photo/2017/03/09/12/31/yogurt-2122749_1280.jpg", description: "Creamy yogurt, perfect for healthy snacking" },
+
+{ id:23, name: "Cocoa Beans (1kg)",           category: "grains",   price: 32.00, image: "https://cdn.pixabay.com/photo/2016/03/05/19/02/cocoa-1238259_1280.jpg", description: "Premium cocoa beans" },
+{ id:24, name: "Mixed Grains (1kg)",          category: "grains",   price: 20.00, image: "https://cdn.pixabay.com/photo/2016/03/05/19/02/grains-1238261_1280.jpg", description: "Nutritious mixed grains and cereals" },
+
+{ id:25, name: "Sugar (1kg)",                 category: "dairy",    price: 7.00,  image: "https://cdn.pixabay.com/photo/2015/04/08/13/12/sugar-712147_1280.jpg", description: "Pure white sugar for cooking and beverages" },
+
+{ id:26, name: "Sweet Potatoes (2kg)",        category: "fruits",   price: 10.00, image: "https://cdn.pixabay.com/photo/2016/11/29/09/08/sweet-potato-1869715_1280.jpg", description: "Sweet and nutritious sweet potatoes" },
+{ id:27, name: "Cassava Tuber (Large)",       category: "fruits",   price: 8.00,  image: "https://cdn.pixabay.com/photo/2017/06/20/15/47/cassava-2423086_1280.jpg", description: "Fresh cassava tuber for gari and fufu" },
+{ id:28, name: "Green Plantain (8 fingers)",  category: "fruits",   price: 6.00,  image: "https://cdn.pixabay.com/photo/2017/08/09/05/19/green-plantains-2617292_1280.jpg", description: "Unripe plantains perfect for kelewele and chips" }
+];
+
+    // ---------- App logic (same robust code) ----------
+    const productsGrid = document.getElementById('productsGrid');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const cartModal = document.getElementById('cartModal');
+    const cartCountEl = document.getElementById('cartCount');
+    const cartBody = document.getElementById('cartBody');
+    const cartTotalEl = document.getElementById('cartTotal');
+    const noResultsEl = document.getElementById('noResults');
+    const PLACEHOLDER = 'https://via.placeholder.com/800x600.png?text=Image+not+available';
+    let cart = [];
+
+    function isLocalFilePath(path) {
+      if (!path) return false;
+      return /^[a-zA-Z]:\\|^\\/i.test(path) || path.startsWith('C:\\') || path.startsWith('c:\\');
+    }
+    function safeImageUrl(src) {
+      if (!src) return PLACEHOLDER;
+      if (isLocalFilePath(src)) return PLACEHOLDER;
+      return src;
+    }
+    function formatCurrency(n) { return Number(n).toFixed(2); }
+
+    function loadCartFromStorage() {
+      try {
+        const v1 = localStorage.getItem('freshbasket_cart_v1');
+        if (v1) {
+          const map = JSON.parse(v1);
+          cart = Object.keys(map).map(k => {
+            const it = map[k];
+            return { id: Number(it.id || k), name: it.name, price: Number(it.price || 0), image: it.image || '', quantity: Number(it.quantity || 0) };
+          }).filter(Boolean);
+          return;
+        }
+        const raw = localStorage.getItem('freshbasket_cart');
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) {
+            cart = arr.map(it => ({ id: Number(it.id), name: it.name, price: Number(it.price || 0), image: it.image || '', quantity: Number(it.quantity || 0) }));
+            return;
+          }
+        }
+        cart = [];
+      } catch (e) {
+        console.warn('Failed to load cart from storage', e);
+        cart = [];
+      }
+    }
+
+    function saveCartToStorage() {
+      try {
+        localStorage.setItem('freshbasket_cart', JSON.stringify(cart));
+        const map = {};
+        cart.forEach(it => { map[it.id] = { id: it.id, name: it.name, price: it.price, image: it.image, quantity: it.quantity }; });
+        localStorage.setItem('freshbasket_cart_v1', JSON.stringify(map));
+      } catch (e) { console.warn('Could not save cart', e); }
+    }
+
+    function escapeHtml(str=''){ return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
+
+    function renderProducts(list) {
+      if (!productsGrid) return;
+      if (!Array.isArray(list) || list.length === 0) {
+        productsGrid.style.display = 'none';
+        if (noResultsEl) { noResultsEl.style.display = 'block'; noResultsEl.setAttribute('aria-hidden','false'); }
+        return;
+      }
+      productsGrid.style.display = 'grid';
+      if (noResultsEl) { noResultsEl.style.display = 'none'; noResultsEl.setAttribute('aria-hidden','true'); }
+
+      productsGrid.innerHTML = '';
+      const frag = document.createDocumentFragment();
+
+      list.forEach(product => {
+        const card = document.createElement('article');
+        card.className = 'product-card';
+        card.setAttribute('data-category', product.category);
+        card.innerHTML = `
+          <img class="product-image" src="${safeImageUrl(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.src='${PLACEHOLDER}'">
+          <div class="product-info">
+            <div class="product-name">${escapeHtml(product.name)}</div>
+            <div class="product-category" style="color:#666;text-transform:capitalize;">${escapeHtml(product.category)}</div>
+            <div class="product-price">GHS ${formatCurrency(product.price)}</div>
+            <button class="add-to-cart-btn" data-id="${product.id}" aria-label="Add ${escapeHtml(product.name)} to cart"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+          </div>
+        `;
+        frag.appendChild(card);
+      });
+
+      productsGrid.appendChild(frag);
+
+      productsGrid.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', () => { const id = Number(btn.dataset.id); addToCart(id); });
+      });
+    }
+
+    function getActiveCategory() {
+      const active = document.querySelector('.category-btn.active');
+      return active ? (active.dataset.category || 'all') : 'all';
+    }
+    function filterProducts(searchTerm='') {
+      const q = (searchTerm || '').trim().toLowerCase();
+      const activeCategory = getActiveCategory();
+      let filtered = products.slice();
+      if (activeCategory !== 'all') filtered = filtered.filter(p => p.category === activeCategory);
+      if (q) filtered = filtered.filter(p => (p.name + ' ' + (p.description||'')).toLowerCase().includes(q));
+      renderProducts(filtered);
+    }
+
+    function updateCartCountUI() {
+      const total = cart.reduce((s, it) => s + (it.quantity || 0), 0);
+      if (cartCountEl) { cartCountEl.textContent = total; cartCountEl.style.display = total > 0 ? 'inline-block' : 'none'; }
+    }
+    function addToCart(productId, qty=1) {
+      const product = products.find(p => p.id === productId);
+      if (!product) { console.warn('Product not found', productId); return; }
+      const existing = cart.find(i => i.id === productId);
+      if (existing) existing.quantity = (existing.quantity || 0) + qty;
+      else cart.push({ id: product.id, name: product.name, price: product.price, image: product.image || '', quantity: qty });
+      saveCartToStorage();
+      updateCartCountUI();
+      flashCartButton();
+    }
+    function flashCartButton() { const btn = document.querySelector('.cart-btn'); if(!btn) return; btn.style.transform='scale(1.08)'; setTimeout(()=>btn.style.transform='',180); }
+
+    function displayCartItems() {
+      if (!cartBody) return;
+      if (cart.length === 0) {
+        cartBody.innerHTML = `<div class="empty-cart" role="status"><i class="fas fa-shopping-cart" style="font-size:40px;color:#ddd;"></i><h3>Your cart is empty</h3><p>Add products to get started</p></div>`;
+        cartTotalEl.textContent = '0.00';
+        return;
+      }
+      const container = document.createElement('div');
+      cart.forEach(item => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'cart-item';
+        itemEl.innerHTML = `
+          <img src="${safeImageUrl(item.image)}" alt="${escapeHtml(item.name)}" onerror="this.src='${PLACEHOLDER}'">
+          <div class="cart-item-details">
+            <div class="cart-item-name">${escapeHtml(item.name)}</div>
+            <div class="cart-item-price">GHS ${formatCurrency(item.price)} each</div>
+          </div>
+          <div class="cart-item-controls">
+            <button class="quantity-btn" data-id="${item.id}" data-delta="-1" aria-label="Decrease quantity"><i class="fas fa-minus"></i></button>
+            <span style="min-width:28px;text-align:center;font-weight:700;">${item.quantity}</span>
+            <button class="quantity-btn" data-id="${item.id}" data-delta="1" aria-label="Increase quantity"><i class="fas fa-plus"></i></button>
+            <button class="remove-item" data-id="${item.id}" aria-label="Remove item"><i class="fas fa-trash"></i></button>
+          </div>
+        `;
+        container.appendChild(itemEl);
+      });
+      cartBody.innerHTML = '';
+      cartBody.appendChild(container);
+
+      cartBody.querySelectorAll('.quantity-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = Number(btn.dataset.id); const delta = Number(btn.dataset.delta);
+          changeQuantity(id, delta);
+        });
+      });
+      cartBody.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          removeFromCart(Number(btn.dataset.id));
+        });
+      });
+
+      updateCartTotal();
+    }
+    function changeQuantity(productId, delta) {
+      const item = cart.find(i => i.id === productId); if (!item) return;
+      item.quantity += delta; if (item.quantity <= 0) cart = cart.filter(i => i.id !== productId);
+      saveCartToStorage(); updateCartCountUI(); displayCartItems();
+    }
+    function removeFromCart(productId) { cart = cart.filter(i => i.id !== productId); saveCartToStorage(); updateCartCountUI(); displayCartItems(); }
+    function updateCartTotal() { const total = cart.reduce((s,it)=> s + (it.price * it.quantity), 0); if (cartTotalEl) cartTotalEl.textContent = formatCurrency(total); }
+
+    function viewCart() { displayCartItems(); updateCartCountUI(); cartModal.setAttribute('aria-hidden','false'); cartModal.style.display='flex'; document.body.style.overflow='hidden'; window.location.hash = '#cart'; }
+    function closeCart() { cartModal.setAttribute('aria-hidden','true'); cartModal.style.display='none'; document.body.style.overflow=''; if (location.hash === '#cart') history.replaceState(null,'',' '); }
+    function proceedToCheckout() { if (cart.length === 0) { alert('Your cart is empty — add items before checkout.'); return; } saveCartToStorage(); window.location.href='checkout.html'; }
+
+    window.viewCart = viewCart; window.closeCart = closeCart; window.addToCart = addToCart; window.updateQuantity = (id,delta) => changeQuantity(id,delta); window.removeFromCart = removeFromCart; window.proceedToCheckout = proceedToCheckout;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCartFromStorage();
+      renderProducts(products);
+      updateCartCountUI();
+
+      if (searchInput) {
+        const debounced = debounce((e)=> filterProducts(e.target.value), 180);
+        searchInput.addEventListener('input', debounced);
+      }
+      if (searchBtn) searchBtn.addEventListener('click', () => filterProducts(searchInput.value));
+
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          filterProducts(searchInput.value);
+        });
+      });
+
+      cartModal.addEventListener('click', (e) => { if (e.target === cartModal) closeCart(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCart(); });
+    });
+
+    function debounce(fn, wait=200) { let t; return (...args) => { clearTimeout(t); t = setTimeout(()=> fn(...args), wait); }; }
+
+    // No-op safe placeholders for checkout page functions (if invoked from other pages)
+    window.displayCheckoutItems = function() { /* safe no-op */ };
+    window.updateCheckoutTotal = function() { /* safe no-op */ };
+  </script>
+</body>
+</html>
